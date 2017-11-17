@@ -1,8 +1,8 @@
 module.exports = function main(inputs, allItems) {
-    var output = calculateCount(inputs); //计算相同元素的数量
-    var outputItems = combineItemsAndCount(output, allItems);  //合并商品信息与数量
+    var count = calculateCount(inputs); //计算相同barcode;
+    var countAndItems = combineItemsAndCount(count, allItems);  //合并商品信息与数量
 
-    console.log(printReceiptText(outputItems));   //打印拼接的信息
+    console.log(printReceiptText(countAndItems));   //打印拼接的信息
 };
 function calculateCount(inputs) {
     var count = 1;
@@ -29,13 +29,13 @@ function calculateCount(inputs) {
     }
     return array;
 }
-function combineItemsAndCount(output, allItems) {
+function combineItemsAndCount(inputsCount, allItems) {
     var outputItems = [];
 
-    for (var i = 0; i < output.length; i++) {
+    for (var i = 0; i < inputsCount.length; i++) {
         for (var j = 0; j < allItems.length; j++) {
-            if (output[i].barcode === allItems[j].barcode) {
-                outputItems.push(Object.assign(output[i], allItems[j]));//Object.assign() 方法用于将所有可枚举的属性的值从一个或多个源对象复制到目标对象。它将返回目标对象。
+            if (inputsCount[i].barcode === allItems[j].barcode) {
+                outputItems.push(Object.assign(inputsCount[i], allItems[j]));//Object.assign() 方法用于将所有可枚举的属性的值从一个或多个源对象复制到目标对象。它将返回目标对象。
             }
         }
     }
