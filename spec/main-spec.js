@@ -1,4 +1,4 @@
-const database = require('../main/datbase');
+const loadAllItems = require('../main/datbase');
 const main = require('../main/main');
 
 describe('pos', function () {
@@ -6,7 +6,7 @@ describe('pos', function () {
     var inputs;
 
     beforeEach(function () {
-        allItems = database.loadAllItems;
+        allItems = loadAllItems();
         inputs = [
             'ITEM000001',
             'ITEM000001',
@@ -24,7 +24,7 @@ describe('pos', function () {
 
         spyOn(console, 'log');
 
-        main(inputs);
+        main(inputs,allItems);
 
         var expectText =
             '***<没钱赚商店>购物清单***\n' +
@@ -43,3 +43,5 @@ describe('pos', function () {
         expect(console.log).toHaveBeenCalledWith(expectText);
     });
 });
+
+

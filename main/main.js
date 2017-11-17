@@ -1,70 +1,78 @@
-function main() {
-    var inputs = [
-        'ITEM000001',
-        'ITEM000001',
-        'ITEM000001',
-        'ITEM000001',
-        'ITEM000001',
-        'ITEM000003-2',
-        'ITEM000005',
-        'ITEM000005',
-        'ITEM000005'
-    ];
-    var objectInputs = calculateCount(inputs);
+module.exports = function main(inputs, allItems) {
+    var output = calculateCount(inputs); //计算相同元素的数量
+    var outputItems = combineItemsAndCount(output, allItems);  //合并商品信息与数量
 
-     // objectInputs = calculatePromotions(objectInputs);
-    console.log("Debug Info");
-    console.log(objectInputs);
-    return inputs;
-
+    console.log(printReceiptText(outputItems));   //打印拼接的信息
 };
 function calculateCount(inputs) {
-    var objectInputs = [];
+    var count = 1;
+    var array = [];
+    var items = inputs.sort();   //对数据进行排序
 
-    for (var i = 0; i < inputs.length;) {
-        objectInputs = isExist(inputs[i], objectInputs);
-    }
-
-    return objectInputs;
-}
-function isExist(element, objectInputs) {
-    var barcodeCount = element.split("-");
-    var barcode = barcodeCount.length === 1 ? element : barcodeCount[0];
-    var count = barcodeCount.length === 1 ? 1 : barcodeCount[1];
-
-    for (var i = 0; i < objectInputs.length; i++) {
-
-        if (objectInputs[i].barcode === barcode) {
-            objectInputs[i].count ++;
+    for (var i = 0; i < items.length; i++) {
+        if (items[i] !== items[i + 1]) {
+            array.push({"barcode": items[i], "count": count});
+            count = 1;
+        } else {
+            count++;
         }
     }
+    for (var i = 0; i < array.length; i++) {
+        var itemInfo = array[i];
 
-    objectInputs.push({"barcode": barcode, "count": parseInt(count)});
+        if (itemInfo.barcode.indexOf("-") !== -1) {
+            var barcodeSplit = itemInfo.barcode.split("-");
 
-    return objectInputs;
+            array[i].barcode = barcodeSplit[0];
+            array[i].count = parseInt(itemInfo.count) + parseInt(barcodeSplit[1]) - 1;
+        }
+    }
+    return array;
 }
+function combineItemsAndCount(output, allItems) {
+    var outputItems = [];
 
-function loadPromotions() {
-
-}
-function calculatePromotions(inputs) {
-    var promotionsItems = loadPromotions()[0].barcodes;
-    var promotionsItemsCount = [];
-    var count = calculateCount().count;
-    for(var i =0 ;i<promotionsItems.length;i ++){
-        if(promotionsItems[i]==='ITEM000000'&&promotionsItems[i]==='ITEM000001'
-            &&promotionsItems[i]==='ITEM000005'){
-            if(count>3){
-
+    for (var i = 0; i < output.length; i++) {
+        for (var j = 0; j < allItems.length; j++) {
+            if (output[i].barcode === allItems[j].barcode) {
+                outputItems.push(Object.assign(output[i], allItems[j]));//Object.assign() 方法用于将所有可枚举的属性的值从一个或多个源对象复制到目标对象。它将返回目标对象。
             }
-
-
         }
-
     }
 
-    return inputs;
+    return outputItems;
+}
+function printReceiptText(outputItems) {
+    var ReceiptTextHead = `***<没钱赚商店>购物清单***\n`;
+    var ReceiptTextMiddle = `----------------------\n`;
+    var ReceiptTextBelow = `**********************`;
+    var ReceiptTextItem = "";
+    var ReceiptTextDiscount = "挥泪赠送商品：\n";
 
+    var totalMoney = 0;
+    var saveMoney = 0;
+
+    for (var i = 0; i < outputItems.length; i++) {
+        var itemCount = outputItems[i].count;
+
+        if (itemCount >= 3) {    //商品价格满二减一
+            itemCount -= parseInt(itemCount / 3);
+            ReceiptTextDiscount += `名称：${outputItems[i].name}，数量：${parseInt(outputItems[i].count / 3)}${outputItems[i].unit}\n`
+        }
+        var itemPrice = itemCount * outputItems[i].price;
+
+        totalMoney += itemPrice;
+        saveMoney += (parseInt(outputItems[i].count / 3)) * outputItems[i].price;
+        ReceiptTextItem += `名称：${outputItems[i].name}，数量：${outputItems[i].count}${outputItems[i].unit}，单价：${parseFloat(outputItems[i].price).toFixed(2)}(元)，小计：${parseFloat(itemPrice).toFixed(2)}(元)\n`;
+    }
+
+    var totalAll = `总计：${parseFloat(totalMoney).toFixed(2)}(元)\n`;   //toFixed()可把 Number 四舍五入为指定小数位数的数字。
+    var totalSave = `节省：${parseFloat(saveMoney).toFixed(2)}(元)\n`;
+//$()获取在别的地方定义的函数；
+    return ReceiptTextHead + ReceiptTextItem + ReceiptTextMiddle + ReceiptTextDiscount + ReceiptTextMiddle + totalAll + totalSave + ReceiptTextBelow;
 }
 
-main();
+
+
+
+
